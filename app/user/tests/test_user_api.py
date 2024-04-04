@@ -1,5 +1,5 @@
 """
-Tests for the user API
+Tests for the user API.
 """
 
 from django.contrib.auth import get_user_model
@@ -19,7 +19,7 @@ def create_user(**params):
 
 
 class PublicUserApiTests(TestCase):
-    """Test the public features of the user API"""
+    """Test the public features of the user API."""
 
     def setUp(self):
         self.client = APIClient()
@@ -51,7 +51,7 @@ class PublicUserApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_password_too_short_error(self):
-        """Test an error is returned if password less than 5 chars"""
+        """Test an error is returned if password less than 5 chars."""
         payload = {
             "email": "test@example.com",
             "password": "pw",
@@ -72,7 +72,10 @@ class PublicUserApiTests(TestCase):
         }
         create_user(**user_details)
 
-        payload = {"email": user_details["email"], "password": user_details["password"]}
+        payload = {
+            "email": user_details["email"],
+            "password": user_details["password"],
+        }
 
         res = self.client.post(TOKEN_URL, payload)
 
@@ -90,12 +93,24 @@ class PublicUserApiTests(TestCase):
         self.assertNotIn("token", res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_create_token_email_not_found(self):
+        """Test error returned if user not found for given email."""
+        payload = {
+            "email": "test@example.com",
+            "password": "pass123",
+        }
+        res = self.client.post(TOKEN_URL, payload)
+
+        self.assertNotIn("token", res.data)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_create_token_blank_password(self):
-        "Test posting a blank password returns an error"
+        """Test posting a blank password returns an error"""
         payload = {"email": "test@example.com", "password": ""}
         res = self.client.post(TOKEN_URL, payload)
 
-        self.assertNotIn(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn("token", res.data)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_retrieve_user_unauthorized(self):
         """Test authentication is required for users."""
@@ -104,7 +119,7 @@ class PublicUserApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class PrivateUserApiTest(TestCase):
+class PrivateUserApiTests(TestCase):
     """Test API requests that require authentication."""
 
     def setUp(self):
@@ -131,6 +146,7 @@ class PrivateUserApiTest(TestCase):
         )
 
     def test_post_me_not_allowed(self):
+        """Test POST is not allowed for the me endpoint."""
         res = self.client.post(ME_URL, {})
         self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
