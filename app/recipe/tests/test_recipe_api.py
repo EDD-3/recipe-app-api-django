@@ -63,11 +63,6 @@ class PrivateRecipeApiTests(TestCase):
             email="user@example.com",
             password="test123",
         )
-        self.user = get_user_model().objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            name="Test Name",
-        )
         self.client.force_authenticate(self.user)
 
     def test_retrieve_recipes(self):
